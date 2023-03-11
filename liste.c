@@ -230,7 +230,7 @@ liste_chainee_t *delete_tail_list(liste_chainee_t* head){
         return NULL;
     }
 
-    while (ptr->next->next) { // Itère jusqu'au dernière élément de la liste
+    while (ptr->next->next) { // Itère jusqu'a l'avant dernière élément de la liste
         ptr = ptr->next;
     }
 
@@ -261,7 +261,7 @@ liste_chainee_t *delete_tail_list(liste_chainee_t* head){
 liste_chainee_t *delete_target_list(liste_chainee_t* head, int pos){
 
     if (pos > list_length(head)-1 || pos < 0) {  // Controle d'acquisition
-        printf("Erreur l'élément n'a pas était ajouté car la position choisi est incorrecte.\n");
+        printf("Erreur l'élément n'a pas était supprimé car la position choisi est incorrecte.\n");
         return head;
     }
 
