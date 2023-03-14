@@ -45,6 +45,8 @@ int main() {
     une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
     
     display_list_v2(une_liste_propriete);
+    
+    erase_list_v2(une_liste_propriete);
 
     return EXIT_SUCCESS;
 }
