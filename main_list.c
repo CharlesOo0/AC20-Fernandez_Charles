@@ -60,6 +60,8 @@ int main() {
 
     une_liste = delete_target_list(une_liste, 10);
     display_list(une_liste);
+    
+    erase_list(une_liste);
 
     return EXIT_SUCCESS;
 }
