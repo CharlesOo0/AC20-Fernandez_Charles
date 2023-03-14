@@ -40,13 +40,42 @@ int main() {
     display_list_v2(une_liste_propriete);
 
     // Test le delete tail
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
     
+    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
+    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
+    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
+
     display_list_v2(une_liste_propriete);
-    
+
     erase_list_v2(une_liste_propriete);
+    
+
+    // Test cas d'application Multiply two list
+    
+    liste_propriete_t *headFirstList = malloc(sizeof(liste_propriete_t));
+    headFirstList->list_length = 0;
+    headFirstList->head = NULL;
+    headFirstList->tail = NULL;
+
+    headFirstList->head = add_head_list_v2(headFirstList, 5);
+    headFirstList->head = add_head_list_v2(headFirstList, 2);
+    headFirstList->head = add_head_list_v2(headFirstList, 7);
+    
+
+    liste_propriete_t *deux_liste_propriete = malloc(sizeof(liste_propriete_t));
+    deux_liste_propriete->list_length = 0;
+    deux_liste_propriete->head = NULL;
+    deux_liste_propriete->tail = deux_liste_propriete->head;
+
+    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 1);
+    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 9);
+    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 3);
+    
+
+    headFirstList = multiply_twolist_v2(headFirstList,deux_liste_propriete);
+
+    display_list_v2(headFirstList);
+    
 
     return EXIT_SUCCESS;
 }
