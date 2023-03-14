@@ -58,6 +58,10 @@ liste_chainee_t *add_tail_list_v2(liste_propriete_t* propriete, int data) {
     new_node->next = NULL;
     new_node->data = data;
 
+    if (!propriete->tail) {
+        return add_head_list_v2(propriete,data);
+    }
+
     propriete->list_length += 1; // Ajoute 1 à la taille de la liste sur la fiche propriété
     propriete->tail->next = new_node; // Affecte le nouvelle élément en fin de liste
     propriete->tail = new_node; // Le nouvelle élément devient la nouvelle queue de liste
@@ -173,6 +177,43 @@ liste_chainee_t *delete_tail_list_v2(liste_propriete_t* propriete){
     propriete->list_length -= 1;
     free(ptr->next); // Efface le dernière élément
     ptr->next = NULL;
+    propriete->tail = ptr;
 
     return propriete->head;
+}
+
+/*!
+ * @brief Multiplie deux listes chainée représentant un nombre et renvoie le résultat dans la première liste chainée
+ * @param headFirstList Pointeur vers la fiche propriété de la première liste
+ * @param headSecondList Pointeur vers la fiche propriété de la seconde liste
+ * 
+ * Comportement : 
+ * Récupère le nombre des deux listes dans deux variables
+ * les multiplies et réaffecte le résultat à la liste 1
+ * avec une boucle permettant de récupérer les chiffre de droite à gauche
+ */
+liste_propriete_t *multiply_twolist_v2(liste_propriete_t *headFirstList, liste_propriete_t *headSecondList) {
+    int FirstList = 0,SecondList = 0; // Les 2 ints dans lesquelles on va récupérer les valeurs de nos deux listes
+    liste_chainee_t *ptrFirstList = headFirstList->head; 
+    liste_chainee_t *ptrSecondList = headSecondList->head; 
+
+    while (ptrFirstList ||  ptrSecondList) { // Tant que un des deux pointeurs différents de NULL on continue permet de traiter des listes de différentes tailles
+        if (ptrFirstList) {
+            FirstList = FirstList * 10 + ptrFirstList->data; // On vide la liste dans notre entier chaque fois qu'on vois que la liste à un nouvelle élément on multiplie par 10
+            ptrFirstList = ptrFirstList->next; // car ont lit la liste de gauche à droite
+        }
+        if (ptrSecondList) {
+            SecondList = SecondList * 10 + ptrSecondList->data; // On vide la liste dans notre entier chaque fois qu'on vois que la liste à un nouvelle élément on multiplie par 10
+            ptrSecondList = ptrSecondList->next; // car ont lit la liste de gauche à droite
+        }
+    }
+    FirstList *= SecondList; // Multiplie le nombre des deux listes
+    erase_list_v2(headFirstList); // Efface la liste une
+    while (FirstList != 0) {
+        headFirstList->head = add_head_list_v2(headFirstList, FirstList%10); // Ajoute l'unité de FirstList à la liste une
+        FirstList = (FirstList - FirstList%10) / 10; // Enleve l'unité ajouté et divise par 10 pour passé au chiffre d'après
+    }
+
+    return headFirstList;
+
 }
