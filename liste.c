@@ -203,6 +203,10 @@ liste_chainee_t *delete_head_list(liste_chainee_t* head){
         free(head); // Supprime l'ancienne tête
         return temp;
     }
+    
+    if (head) {
+        free(head);
+    }
 
     return NULL;
 }
