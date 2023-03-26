@@ -6,12 +6,12 @@
  */
 void erase_list_dl(liste_double_t* head){
 
-    while (head->next) {
-        head = head->next;
-        free(head->previous); 
+    while (head->next) { // Itère à travers la liste jusqu'aux dernières élément
+        head = head->next; // Passe à l'élément suivant
+        free(head->previous); // libère l'élément d'avant
     }
 
-    free(head);
+    free(head); // libère le dernière élément
 
 
 }
