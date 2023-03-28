@@ -50,5 +50,29 @@ void main(){
     une_liste = NULL;
 
     display_list_dl(une_liste);
+
+    // Test le add target
+
+    printf("Test du add target ici --> \n");
+
+    une_liste = add_head_dl(une_liste,10);
+    une_liste = add_head_dl(une_liste,7);
+    une_liste = add_head_dl(une_liste,2);
+
+    display_list_dl(une_liste);
+
+    une_liste = add_target_dl(une_liste,185,0);
+
+    display_list_dl(une_liste);
+
+    // Test le delete target 
+
+    printf("Test du add target ici --> \n");
+
+    display_list_dl(une_liste);
+
+    une_liste = delete_targert_dl(une_liste,2);
+
+    display_list_dl(une_liste);
     
 }
