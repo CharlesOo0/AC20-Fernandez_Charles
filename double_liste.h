@@ -12,9 +12,12 @@ typedef struct _liste_double{
 /* Initialisation des prototypes */
 void erase_list_dl(liste_double_t* head);
 void display_list_dl(liste_double_t* head);
+int list_length(liste_double_t* head);
 liste_double_t* add_head_dl(liste_double_t* head, int data);
 liste_double_t *add_tail_list_dl(liste_double_t* head, int data);
 liste_double_t *delete_head_list_dl(liste_double_t* head);
 liste_double_t *delete_tail_list_dl(liste_double_t* head);
+liste_double_t *add_target_dl(liste_double_t* head, int data, int pos);
+liste_double_t *delete_targert_dl(liste_double_t* head, int pos);
 
 #endif
