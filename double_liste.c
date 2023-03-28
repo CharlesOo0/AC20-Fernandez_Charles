@@ -42,6 +42,25 @@ void display_list_dl(liste_double_t* head) {
 }
 
 /*!
+* @brief retourne le nombre d'élément d'une liste chainée
+* @param head le pointeur sur le premier élément de la liste
+* 
+* Comportement :
+* - Itère simplement dans la liste jusqu'au dernière élément et compte
+*/
+int list_length(liste_double_t* head){
+    int i = 0;
+    liste_double_t* ptr = head; // Initialise un pointeur sur la tête de liste
+
+    while (ptr) { // Itère dans la liste
+        ptr = ptr->next;
+        ++i;
+    }
+
+    return i;
+}
+
+/*!
  * @brief Ajoute une node en tête de liste
  * @param head pointeur vers la tête de liste
  * @param data la data de la nouvelle node
@@ -154,3 +173,85 @@ liste_double_t *delete_tail_list_dl(liste_double_t* head){
 
     return head;
 }
+
+liste_double_t *add_target_dl(liste_double_t* head, int data, int pos) {
+    liste_double_t* new_node = malloc(sizeof(liste_double_t));
+    new_node->data = data;
+    
+    if ( pos < 0 || pos > list_length(head) ) { // Controle d'acquisition
+        printf("Erreur position choisie incorrecte\n");
+        return head;
+    }
+    
+    if (pos == 0) { // Si on insère au première élément
+
+        if (head) { // Si la liste n'est pas vide la suite du nouvelle élément est la liste
+            new_node->next = head;
+            head->previous = new_node;
+        }else { // Sinon new_node est seul
+            new_node->next = NULL;
+        }
+
+        new_node->previous = NULL; // NULL car new_node est la tête
+        return new_node;
+    }else { // Si on insère dans n'importe quel autre position
+        int i = 0;
+        liste_double_t *ptr = head;
+        while ( i < pos - 1 && ptr->next ) { // Itère avec un ptr jusqu'à l'élément avant la position voulue
+            i++;
+            ptr = ptr->next;
+        }
+        
+        new_node->previous = ptr;
+        if (ptr->next) { // Si il y à un bout de liste après la position choisie
+            new_node->next = ptr->next; // Le colle à new_node
+            ptr->next->previous = new_node; 
+            ptr->next = new_node; // Et colle la partie gauche
+        }else {  // Sinon Colle juste la partie gauche à new_node
+            new_node->next = NULL;
+            ptr->next = new_node;
+        }
+    }
+
+    return head; // Retourne la tête de liste
+}
+
+liste_double_t *delete_targert_dl(liste_double_t* head, int pos) {
+    
+    if ( pos < 0 || pos > list_length(head) - 1) { // Controle d'acquisition
+        printf("Erreur position choisie incorrecte\n");
+        return head;
+    }
+    
+    if (!head) {  // Si la liste est vide rien à supprimer
+        return NULL;
+    }else if (pos == 0) { // Si la position est 0 supprime la tête
+        if (head->next) { // Si il à un bout de liste après la tête
+            liste_double_t* tmp = head->next; // Le renvoie
+            free(head); // et free la tête
+            return tmp;
+        }else { // Sinon free juste la tête
+            free(head);
+            return NULL;
+        }
+    }else {
+        liste_double_t* ptr = head;
+        int i = 0;
+        while ( i < pos && ptr->next) { // Itère jusqu'à l'élément à supprimer
+            i++;
+            ptr = ptr->next;
+        }
+        liste_double_t* tmp = ptr->previous;
+        if (ptr->next) {
+            ptr->next->previous = tmp;
+            tmp->next = ptr->next;
+        }else {
+            tmp->next = NULL;
+        }
+        free(ptr);
+    }
+
+    return head; // Retourne la tête de liste
+}
+
+
