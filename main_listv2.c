@@ -1,81 +1,94 @@
-#include "liste_v2.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-int main() {
+#include "double_liste.c"
 
-    liste_propriete_t *une_liste_propriete = malloc(sizeof(liste_propriete_t));
-    une_liste_propriete->list_length = 0;
-    une_liste_propriete->head = NULL;
-    une_liste_propriete->tail = NULL;
+void main(){
+    liste_double_t *une_liste = NULL;
 
-    // Test le display
-    display_list_v2(une_liste_propriete);
+    display_list_dl(une_liste);
 
-    // Test le add head
-    une_liste_propriete->head = add_head_list_v2(une_liste_propriete, 5);
-    une_liste_propriete->head = add_head_list_v2(une_liste_propriete, 2);
-    une_liste_propriete->head = add_head_list_v2(une_liste_propriete, 7);
-
-    display_list_v2(une_liste_propriete);
-
-    // Test le add tail
-    une_liste_propriete->head = add_tail_list_v2(une_liste_propriete, 1);
-    une_liste_propriete->head = add_tail_list_v2(une_liste_propriete, 9);
-    une_liste_propriete->head = add_tail_list_v2(une_liste_propriete, 3);
-
-    display_list_v2(une_liste_propriete);
-
-    // Test le erase list
-    erase_list_v2(une_liste_propriete);
-
-    display_list_v2(une_liste_propriete);
-
-    for (int i=0; i<10; ++i)
-        une_liste_propriete->head = add_tail_list_v2(une_liste_propriete, i+1);
-
-    // Test le delete head
-    une_liste_propriete->head = delete_head_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_head_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_head_list_v2(une_liste_propriete);
-
-    display_list_v2(une_liste_propriete);
-
-    // Test le delete tail
+    une_liste = add_head_dl(une_liste,5);
+    une_liste = add_head_dl(une_liste,5);
+    une_liste = add_head_dl(une_liste,5);
     
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
-    une_liste_propriete->head = delete_tail_list_v2(une_liste_propriete);
+    display_list_dl(une_liste);
 
-    display_list_v2(une_liste_propriete);
-
-    erase_list_v2(une_liste_propriete);
     
+    liste_double_t *deux_liste = NULL;
 
-    // Test cas d'application Multiply two list
+    display_list_dl(deux_liste);
+
+    deux_liste = add_tail_list_dl(deux_liste,8);
+    deux_liste = add_tail_list_dl(deux_liste,8);
+    deux_liste = add_tail_list_dl(deux_liste,7);
+
+    display_list_dl(deux_liste);
+
+    deux_liste = delete_head_list_dl(deux_liste);
+    deux_liste = delete_head_list_dl(deux_liste);
+    deux_liste = delete_head_list_dl(deux_liste);
+    deux_liste = delete_head_list_dl(deux_liste);
+
+    display_list_dl(deux_liste);
+
+    une_liste = delete_tail_list_dl(une_liste);
+    une_liste = delete_tail_list_dl(une_liste);
+    une_liste = delete_tail_list_dl(une_liste);
+    une_liste = delete_tail_list_dl(une_liste);
+
+    display_list_dl(une_liste);
+
+    une_liste = add_head_dl(une_liste,5);
+    une_liste = add_head_dl(une_liste,5);
+    une_liste = add_head_dl(une_liste,5);
     
-    liste_propriete_t *headFirstList = malloc(sizeof(liste_propriete_t));
-    headFirstList->list_length = 0;
-    headFirstList->head = NULL;
-    headFirstList->tail = NULL;
+    display_list_dl(une_liste);
 
-    headFirstList->head = add_head_list_v2(headFirstList, 5);
-    headFirstList->head = add_head_list_v2(headFirstList, 2);
-    headFirstList->head = add_head_list_v2(headFirstList, 7);
+    erase_list_dl(une_liste);
+
+    une_liste = NULL;
+
+    display_list_dl(une_liste);
+
+    // Test le add target
+
+    printf("Test du add target ici --> \n");
+
+    une_liste = add_head_dl(une_liste,10);
+    une_liste = add_head_dl(une_liste,7);
+    une_liste = add_head_dl(une_liste,2);
+
+    display_list_dl(une_liste);
+
+    une_liste = add_target_dl(une_liste,185,0);
+
+    display_list_dl(une_liste);
+
+    // Test le delete target 
+
+    printf("Test du add target ici --> \n");
+
+    display_list_dl(une_liste);
+
+    une_liste = delete_targert_dl(une_liste,2);
+
+    display_list_dl(une_liste);
+
+    liste_double_t *troi_liste = NULL;
+    liste_double_t *quatre_liste = NULL;
     
+    troi_liste = multiply_twolist_dl(troi_liste,quatre_liste);
 
-    liste_propriete_t *deux_liste_propriete = malloc(sizeof(liste_propriete_t));
-    deux_liste_propriete->list_length = 0;
-    deux_liste_propriete->head = NULL;
-    deux_liste_propriete->tail = deux_liste_propriete->head;
+    troi_liste = add_head_dl(troi_liste,4);
+    troi_liste = add_head_dl(troi_liste,2);
+    troi_liste = add_head_dl(troi_liste,7);
 
-    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 1);
-    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 9);
-    deux_liste_propriete->head = add_tail_list_v2(deux_liste_propriete, 3);
+    quatre_liste = add_head_dl(quatre_liste,5);
+    quatre_liste = add_head_dl(quatre_liste,2);
+
+    troi_liste = multiply_twolist_dl(troi_liste,quatre_liste);
     
-
-    headFirstList = multiply_twolist_v2(headFirstList,deux_liste_propriete);
-
-    display_list_v2(headFirstList);
-    
-
-    return EXIT_SUCCESS;
+    display_list_dl(troi_liste);
 }
