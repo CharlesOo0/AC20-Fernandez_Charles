@@ -174,6 +174,19 @@ liste_double_t *delete_tail_list_dl(liste_double_t* head){
     return head;
 }
 
+
+/*!
+* @brief Ajoute un nouvelle élément à un index précis de la liste
+* @param head pointeur vers le première élément de la liste
+* @param date un entier représentant la data du nouvelle élément
+* @param pos un entier représentant l'index cible de la liste
+
+* Comportement :
+* - on itère jusqu'a l'élément avant la position
+* - colle notre nouvelle élément comme élément après l'élément avant la position voulue
+* - si il y à un autre bout de liste après l'élément avant
+* - et bien colle ce dernier à notre élément
+*/
 liste_double_t *add_target_dl(liste_double_t* head, int data, int pos) {
     liste_double_t* new_node = malloc(sizeof(liste_double_t));
     new_node->data = data;
@@ -216,6 +229,17 @@ liste_double_t *add_target_dl(liste_double_t* head, int data, int pos) {
     return head; // Retourne la tête de liste
 }
 
+/*!
+* @brief Supprime un élément précis de la liste
+* @param head pointeur vers le première élément de la liste
+* @param pos un entier représentant l'index cible de la liste
+
+* Comportement :
+* - on itère jusqu'a l'élément à supprimer
+* - on regarde si il y à quelque chose après ce dernier
+* - si oui on le colle à élément avant l'élément cible
+* - puis on supprime l'élément cible
+*/
 liste_double_t *delete_targert_dl(liste_double_t* head, int pos) {
     
     if ( pos < 0 || pos > list_length(head) - 1) { // Controle d'acquisition
@@ -252,6 +276,65 @@ liste_double_t *delete_targert_dl(liste_double_t* head, int pos) {
     }
 
     return head; // Retourne la tête de liste
+}
+
+/*! @brief Multiplie deux listes chainées entre elles et l'affecte le résultat à la première liste
+ *  @param headFirstList pointeur vers la tête de la première liste
+ *  @param headSecondList pointeur vers la tête de la seconde liste
+ * 
+ *  Comportement : 
+ * - itère jusqu'au dernier élément de chaque liste
+ * - parcours les listes de gauche à droite en récupérant les valeurs de chaque élément
+ * - et en les incrémentants à une variable représentative du nombre de chaque liste
+ * - multiplie les deux nombres, efface la première liste
+ * - et affecte le resultat de la multiplication à la première liste
+ */
+liste_double_t *multiply_twolist_dl(liste_double_t* headFirstList, liste_double_t* headSecondList) {
+
+    int valueFirstList = 0, valueSecondList = 0; // Initialise nos variable de sortie et variable de récupération
+    liste_double_t *ptrFirstList = headFirstList; // Pointeur vers la tête de la première liste
+    liste_double_t *ptrSecondeList = headSecondList; // Pointeur vers la tête de la seconde liste
+
+    if ( !headFirstList || !headSecondList) { // Gère les possibles liste vide
+        return NULL;
+    }
+
+    while (ptrFirstList->next || ptrSecondeList->next) { // Itère jusqu'au dernière élément des deux listes
+        if (ptrFirstList->next) { // Itère pour le première élément
+            ptrFirstList = ptrFirstList->next;
+        }
+
+        if (ptrSecondeList->next) { // Itère pour le second élément
+            ptrSecondeList = ptrSecondeList->next;
+        }
+    } 
+
+    int cpt1 = 1, cpt2 = 1;
+    while (ptrFirstList || ptrSecondeList) { // Itère de droite à gauche dans les liste
+                                                                // Plus simple de récupérer les nombres dans ce sens
+        if (ptrFirstList) {
+            valueFirstList += ptrFirstList->data*cpt1; // Ajoute le nombre dans sortie liste 1
+            cpt1 *= 10;
+            ptrFirstList = ptrFirstList->previous; // Droite à gauche dans la liste
+        }
+
+        if (ptrSecondeList) {
+            valueSecondList += ptrSecondeList->data*cpt2; // Ajoute le nombre dans sortie liste 2
+            cpt2 *= 10;
+            ptrSecondeList = ptrSecondeList->previous; // Droite à gauche dans la liste
+        }
+    }
+
+    valueFirstList *= valueSecondList; // Multiplie les nombres des deux listes
+    erase_list_dl(headFirstList); // Efface la première liste
+    headFirstList = NULL;
+    
+    while (valueFirstList != 0) {
+        headFirstList = add_head_dl(headFirstList, valueFirstList%10); // Ajoute l'unité du totale
+        valueFirstList = (valueFirstList - valueFirstList%10)/10; // Enleve l'unité ajouté au nombre
+    }
+
+    return headFirstList; // Retourne la tête de la première liste qui est égale au resultat
 }
 
 
