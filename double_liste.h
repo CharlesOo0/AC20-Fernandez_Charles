@@ -19,5 +19,6 @@ liste_double_t *delete_head_list_dl(liste_double_t* head);
 liste_double_t *delete_tail_list_dl(liste_double_t* head);
 liste_double_t *add_target_dl(liste_double_t* head, int data, int pos);
 liste_double_t *delete_targert_dl(liste_double_t* head, int pos);
+liste_double_t *multiply_twolist_dl(liste_double_t* headFirstList, liste_double_t* headSecondList);
 
 #endif
