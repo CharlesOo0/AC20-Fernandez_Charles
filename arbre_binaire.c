@@ -43,7 +43,7 @@ arbre_t *create_tree(int data) {
  * - et ainsi dessuite.
  */
 void display_tree_preorder(arbre_t *root) {
-    if (root != NULL) {
+    if (root) {
         printf("%d ",root->data); // Comme on print directement la racine au début
         // Et ensuite l'on va directement à gauche dans l'arbre on comprend
         // que cela affiche les noeuds de gauche en priorité.
@@ -62,7 +62,7 @@ void display_tree_preorder(arbre_t *root) {
  * - puis l'on retourne au parent du parent et on répète le processus
  */
 void display_tree_inorder(arbre_t *root) {
-    if (root != NULL) { 
+    if (root) { 
         display_tree_inorder(root->Agauche); // Va dans l'arbre de gauche de chaque noeud
         printf("%d ",root->data); // Affiche la valeur une fois le noeud le plus
         // en bas à gauche atteint remonte à son parent car c'est le parent qui permet
@@ -81,7 +81,7 @@ void display_tree_inorder(arbre_t *root) {
  * - et les noeuds fils en premier en partant de celui de gauche
  */
 void display_tree_postorder(arbre_t *root) {
-    if (root != NULL) { 
+    if (root) { 
         display_tree_postorder(root->Agauche); // Va dans l'arbre de gauche de chaque noeud
         display_tree_postorder(root->Adroite); // Va dans l'arbre de droite de chaque noeud
         printf("%d ",root->data); // Comme l'affichage du noeud parent ce fait en 
