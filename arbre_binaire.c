@@ -11,10 +11,9 @@
  */
 void erase_tree(arbre_t *tree) {
     if (tree != NULL) {
-        arbre_t *tmp = tree; // Memorisé la node
         erase_tree(tree->Agauche); // Va dans l'arbre de gauche de chaque noeud
         erase_tree(tree->Adroite); // Va dans l'arbre de droite de chaque noeud
-        free(tmp); // Free l'arbre memorisé
+        free(tree); // Free l'arbre memorisé
     }
 }
 
@@ -91,36 +90,98 @@ void display_tree_postorder(arbre_t *root) {
     }
 }
 
-/*! @brief Ajoute un élément fils à un noeud précis-*-
- *  @param root Pointeur vers la tête de l'arbre à ajouter
- *  @param data La data du nouvelle élément
- *  @param leftOrRight 0 si ajouter au coté gauche 1 pour le coté droit
- * 
- *  Comportement :
- * - Crée le nouvelle élément lui affecte la data
- * - l'affecte à l'arbre gauche ou droit de l'arbre en argument
- * - selon le choix de l'utilisateur
+/*! @brief Compte le nombre de noeud d'un arbre
+ *  @param root Un pointeur vers la tête d'un arbre
+ *
+ * Comportement :
+ * - Parcours récursivement l'arbre, à chaque fois que l'on rencontre
+ * - un noeud non NULL on retourne 1 (Pour le noeud non NULL présent)
+ * - plus un appel récursif à la fonction sur le fils de gauche plus
+ * - le fils de droite également. Jusqu'à rencontré des fils NULL.
+ * - Une fois ces derniers trouvée retourne 0.
  */
-arbre_t *add_tree(arbre_t *tree, int data, int leftOrRight){
-    arbre_t* new_tree = malloc(sizeof(arbre_t)); // Initialise le nouvelle élément
-    new_tree->data = data; // Lui affecte la data
-    new_tree->Agauche = NULL;
-    new_tree->Adroite = NULL;
-
-    if (!tree) {
-        return new_tree;
+int node_counting(arbre_t *root) {
+    if (!root) { // Si on tombe sur un fils NULL alors il n'a pas de sous fils
+        return 0; // Et donc on n'ajoute pas 1 au total de noeud car le noeud actuelle
+        // n'existe pas
+    }else { // Si le noeud sur lequelle on tombe existe on ajoute 1 au total et on va regarder
+    // Si ces fils existe
+        return 1 + node_counting(root->Agauche) + node_counting(root->Adroite);
     }
-
-    if (leftOrRight == 0) { // Si l'utilisateur à selectionner gaucher
-        tree->Agauche = new_tree; // Alors on l'affecte à gauche
-    }else { // Sinon on l'affecte à droite
-        tree->Adroite = new_tree;
-    }
-
-    return tree;
 }
 
-/*! @brief Transforme une liste de noeuds en un arbre binaire complet
+/*! @brief Cherche la valeur du parent d'un noeud à trouver
+ *  @param root Un pointeur vers la tête du noeud à analysé
+ *  @param target La valeur du noeud à trouver
+ *  @param parent La valeur du parent qui exécute la fonction
+ * 
+ * Comportement :
+ * - Nous partons du principe que chaque noeud de l'arbre sont distinct
+ * - et que l'arbre n'a pas de noeud égale à 0. Cette fonction parcours
+ * - l'arbre récursivement. Et un peu à la manière du node counting.
+ * - Nous allons retournée la somme de toute les exécutions de la fonction.
+ * - La fonction retourne quelque chose dans deux cas le premier on rencontre.
+ * - Le noeud cible donc on retourne la valeur de sont parent.
+ * - Le second on est sur un noeud NULL donc on retourne 0.
+ * - Ainsi en incrémentant tout les appelles de fonctions, si il n'y à pas de doublon
+ * - on retrouve dans notre return la valeur du parent.
+ */
+int get_parent(arbre_t *root, int target, int parent) {
+    
+    if (root) { // Regarde si le noeud en argument est non NULL
+
+        if(root->data == target) { // Si la valeur de ce noeud est égale à la target
+            return parent;
+            //printf("\nThe parent of %d is %d",target,parent); // Alors retourne le parent envoyé en argument
+        }else { // Sinon par exploré les fils de gauche et droite récursivement
+            return get_parent(root->Agauche,target,root->data) + get_parent(root->Adroite,target,root->data); // Le parent devient la valeur du noeud exploré     
+        }
+
+    } 
+    return 0;
+}
+
+
+/*! @brief Ajoute un élément fils à un noeud précis ( Par du principe que chaque noeud est différent )
+ *  @param target La valeur du noeud parent
+ *  @param data La valeur du nouveau noeud fils
+ *  @param leftOrRight L'utilisateur précise à gauche 0 ou à droite 1 du noeud parent
+ * 
+ * Comportement :
+ * - Parcours récursivement l'arbre à la manière des display
+ * - Quand il rencontre le noeud cible on y ajoute le noeud fils
+ */
+void add_tree(arbre_t *tree, int target, int data, int leftOrRight){
+
+    if (tree) {
+        if (tree->data == target) { // Si on rencontre le noeud cible
+            arbre_t *new_tree = malloc(sizeof(arbre_t)); // Initialise notre nouveau noeud
+            new_tree->data = data; // Ca data
+            new_tree->Adroite = NULL; // Ces références
+            new_tree->Agauche = NULL; //
+
+            if (leftOrRight == 0) { // Si 0 on l'ajoute a gauche
+                if (tree->Agauche) { // Si il y à déjà une node ici la remplace
+                    free(tree->Agauche);
+                }
+                tree->Agauche = new_tree; // du noeud cible
+            } else{ // Si 1 à droite
+                if (tree->Adroite) { // Si il y à déjà une node ici la remplace
+                    free(tree->Agauche);
+                }
+                tree->Adroite = new_tree;
+            }
+
+            return;
+        }
+
+        add_tree(tree->Agauche,target,data,leftOrRight); // Appelle récursif sur la gauche
+        add_tree(tree->Adroite,target,data,leftOrRight); // Appelle récusif sur la droite
+    }
+
+}
+
+/*! @brief Transforme une liste de noeuds représentant un arbre binaire complet en un arbre binaire complet
  *  @param nodes Une liste de noeuds sous forme d'entier
  *  @param lengthNodes La taille de cette liste de noeud
  *  
@@ -173,4 +234,31 @@ arbre_t *tree_maker(int nodes[], size_t lengthNodes) {
     free(parents); // Free notre liste de parent
 
     return tree; // Retourne la racine
+}
+
+/*! @brief Vérifie si un noeud est présent dans l'arbre
+ *  @param root Un pointeur vers la tête de l'arbre 
+ *  @param target Un entier représentant la valeur de la cible
+ * 
+ * Comportement :
+ * - Ce balade récursivement dans l'arbre, avec des appels sur les noeuds
+ * - gauche et droit jusqu'à ce qu'il soit NULL.
+ * - Une fois le NULL trouvée retourne false. Tant qu'ils sont non NULL
+ * - on vérifie si on à trouver la cible si oui retourne true. Sinon retourne
+ * - les appelles récursif aux fils avec un ||.
+ * - Si on à un seul true dans tout le retour cela comptera comme un true.
+ * - A cause du || .
+ */
+bool is_node(arbre_t *root, int target) {
+
+    if (root) { // Si le noeud n'est pas NULL
+        if (root->data == target) { // Si on trouve la cible
+            return true; // Retourne true
+        }
+
+        return is_node(root->Agauche,target) || is_node(root->Adroite,target); // Sinon retourne 
+    }   // les appelles récursif gauche et droite avec || car si on rencontre un seul true
+    // Cela retournera true
+
+    return false; // Si le noeud est NULL retourne false
 }
