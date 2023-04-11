@@ -155,21 +155,17 @@ void add_tree(arbre_t *tree, int target, int data, int leftOrRight){
 
     if (tree) {
         if (tree->data == target) { // Si on rencontre le noeud cible
-            arbre_t *new_tree = malloc(sizeof(arbre_t)); // Initialise notre nouveau noeud
-            new_tree->data = data; // Ca data
-            new_tree->Adroite = NULL; // Ces références
-            new_tree->Agauche = NULL; //
 
             if (leftOrRight == 0) { // Si 0 on l'ajoute a gauche
                 if (tree->Agauche) { // Si il y à déjà une node ici la remplace
                     free(tree->Agauche);
                 }
-                tree->Agauche = new_tree; // du noeud cible
+                tree->Agauche = create_tree(data); // Crée le nouveau noeud et l'affecte
             } else{ // Si 1 à droite
                 if (tree->Adroite) { // Si il y à déjà une node ici la remplace
                     free(tree->Agauche);
                 }
-                tree->Adroite = new_tree;
+                tree->Adroite = create_tree(data); // Crée le nouveau noeud et l'affecte
             }
 
             return;
