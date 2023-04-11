@@ -10,10 +10,10 @@
  * - de parcours
  */
 void erase_tree(arbre_t *tree) {
-    if (tree != NULL) {
+    if (tree) {
         erase_tree(tree->Agauche); // Va dans l'arbre de gauche de chaque noeud
         erase_tree(tree->Adroite); // Va dans l'arbre de droite de chaque noeud
-        free(tree); // Free l'arbre memorisé
+        free(tree); // Free l'arbre
     }
 }
 
