@@ -101,13 +101,12 @@ void display_tree_postorder(arbre_t *root) {
  * - Une fois ces derniers trouvée retourne 0.
  */
 int node_counting(arbre_t *root) {
-    if (!root) { // Si on tombe sur un fils NULL alors il n'a pas de sous fils
-        return 0; // Et donc on n'ajoute pas 1 au total de noeud car le noeud actuelle
-        // n'existe pas
-    }else { // Si le noeud sur lequelle on tombe existe on ajoute 1 au total et on va regarder
+    if (root) { // Si le noeud sur lequelle on tombe existe on ajoute 1 au total et on va regarder
     // Si ces fils existe
         return 1 + node_counting(root->Agauche) + node_counting(root->Adroite);
     }
+    //Sinon retourne 0
+    return 0;
 }
 
 /*! @brief Cherche la valeur du parent d'un noeud à trouver
