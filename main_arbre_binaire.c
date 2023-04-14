@@ -43,6 +43,11 @@ int main() {
     //           2  8 4  1
 
     un_arbre = tree_maker(nodes, sizeof(nodes)/sizeof(int));
+    erase_node(un_arbre, 8);
+
+    //Test la racine en tant que cible
+    //erase_node(un_arbre,1);
+    //un_arbre = NULL;
 
     display_tree_postorder(un_arbre);
 
