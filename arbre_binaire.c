@@ -257,3 +257,33 @@ bool is_node(arbre_t *root, int target) {
 
     return false; // Si le noeud est NULL retourne false
 }
+
+/*! @brief Efface un noeud spécific de l'arbre
+ *  @param root Un pointeur vers la tête de l'arbre
+ *  @param target La valeur du noeud à supprimer
+ * 
+ * Comportement :
+ * Parcours récursivement l'arbre à la recherche de la cible. Cherche la cible dans les noeuds
+ * fils, sauf dans le cas ou la racine est la cible. Cherche dans les noeuds fils car il faudra
+ * réattribuer ces derniers en tant que NULL si on les effaces, pour que l'arbre ne pointe pas dans le vide.
+ */
+void erase_node(arbre_t *root, int target) {
+    if (root) {
+
+        if (root->data == target) { // Si la racine est la cible
+            erase_tree(root); // Alors on la supprime simplement est c'est à l'utilisateur de gérer le fait
+            return; // que son pointeur est vide comme pour erase_tree()
+        }else if (root->Agauche && root->Agauche->data == target) { // Si la cible est dans le fils de gauche du noeud
+            erase_tree(root->Agauche); // Alors on efface le fils de gauche et ces descendant
+            root->Agauche = NULL; // avec erase_tree(). Et on affecte NULL à ca place
+            return; // Met fin au programme
+        }else if (root->Adroite && root->Adroite->data == target) { // Si la cible est dans le fils de droite du noeud
+            erase_tree(root->Adroite); // Alors on efface le fils de droite et ces descendant
+            root->Adroite = NULL; // avec erase_tree(). Et on affecte NULL à ca place
+            return; // Met fin au programme 
+        }
+        // Sinon continue de parcourir récursivement l'arbre
+        erase_node(root->Agauche,target); 
+        erase_node(root->Adroite,target);
+    }
+}
