@@ -17,6 +17,7 @@
 
  void erase_tree(arbre_t *tree);
  arbre_t *create_tree(int data);
+ void erase_node(arbre_t *root, int target);
  void display_tree_preorder(arbre_t *root);
  void display_tree_inorder(arbre_t *root);
  void display_tree_postorder(arbre_t *root);
