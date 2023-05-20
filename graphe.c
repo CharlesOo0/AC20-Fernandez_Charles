@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "graphe.h"
 
 
@@ -410,8 +411,17 @@ void display_graphe(graph_t *g) {
 
 /*----------------------- Algorithme de Djikstra -----------------------*/
 
-int getIndex(node_d_t *tab, int target) {
-    for (int i = 0; i < length(tab); ++i) { // Itère à travers le tableau
+/*! @brief Cette fonction permet de récupérer l'index d'un noeud dans le tableau
+ *  @param tab Pointeur vers le tableau
+ *  @param target Valeur du noeud cible
+ *  @param length Taille du tableau
+ * 
+ * Comportement :
+ * Itère à travers le tableau jusqu'à trouver le noeud cible.
+ * Si on le trouve retourne son index sinon retourne -1 en guise d'erreur.
+ */
+int getIndex(node_d_t *tab, int target, int length) {
+    for (int i = 0; i < length; ++i) { // Itère à travers le tableau
         if (tab[i].data == target) { // Si on trouve la cible
             return i; // Retourne l'index
         }
@@ -420,26 +430,156 @@ int getIndex(node_d_t *tab, int target) {
     return -1; // Erreur si on ne trouve pas la cible
 }
 
-int *Djikstra(graph_t *g, int start) {
-    node_d_t *tab = malloc(g->memory_allocated * (node_d_t));
+/*! @brief Cette fonction permet de savoir si tout les noeuds du graphes ont était explorées
+ *  @param tab Pointeur vers le tableau
+ *  @param length Taille du tableau
+ * 
+ * Comportement :
+ * Itère à travers tout les noeuds du tableau si l'on rencontre un noeud qui n'a pas était visité
+ * on retourne false sinon true.
+ */
+bool isPainted(node_d_t *tab, int length) {
+    for (int i = 0; i < length; ++i) { // Itère à travers le tableau
+        if (tab[i].painted == false) { // Si un noeud n'a pas était vue
+            return false; // Alors tout les noeuds ne sont pas peints
+        }
+    }
+
+    return true; // Si tout les noeuds on était vue alors tout les noeuds sont peints
+}
+
+
+/*! @brief Cette fonction permet de trouver le prochain noeud à exploré
+ *  @param tab Pointeur vers le tableau
+ *  @param length Taille du tableau
+ * 
+ * Comportement :
+ * Itère une première fois pour trouver un noeud qu'y n'a pas était visité et dont l'étiquette n'est pas infini.
+ * Puis itère une deuxième fois pour chercher s'il il existe dans le tableau un noeud avec une étiquette plus petite qui n'a pas
+ * était visité
+ */
+int searchCurrent(node_d_t *tab, int length) {
+    int current = 0;
+    for (int i = 0 ; i < length ; ++i) { // Itère à travers le tableau
+        if (tab[i].painted == false && tab[i].nametag != -1) { // Si le noeud n'a pas était exploré
+        // Et que son étiquette n'est pas infini
+            current = i; // Alors ce noeud devient le current
+        }
+    }
+
+    for (int i = 0 ; i < length ; ++i) { // Itère une seconde fois à travers la tableau
+        if (tab[i].painted == false && tab[i].nametag != -1 && tab[i].nametag < tab[current].nametag) {
+            // Si on trouve un noeud plus petit qui n'a pas une étiquette infini
+            // Et qui n'a pas était visité
+            current = i; // Alors ce noeud devient le current
+        }
+    }
+    
+    return current; // On retourne le noeud selectionné par les deux tris
+}
+
+
+/*! @brief Cette fonction permet de trouver le prochain noeud à exploré
+ *  @param tab Pointeur vers le tableau
+ *  @param Src Le noeud de départ
+ *  @param Dst Le noeud d'arrivé
+ *  @param length Taille du tableau
+ * 
+ * Comportement :
+ * Vérifie dans un premier temps si le chemin que l'on cherche n'est pas celui du départ.
+ * Si c'est le cas retourne simple le départ sinon
+ * On récupère les index du départ et de l'arrivé dans le tableau
+ * Puis on les concatènes dans un string de sortie.
+ * Ensuite on boucle tant que l'on ne rencontre pas le noeud de départ le noeud précédent notre noeud.
+ * On concatene à gauche du string de sortie. Puis on print simplement le chemin.
+ */
+void path_builder(node_d_t *tab, int Src, int Dst, int length) {
+
+    if (Src == Dst) { // Si le chemin que l'on cherche est celui du départ
+        printf("\n    chemin : %d",Src); // Retourne le départ
+        return; // Et met fin au programme
+    }
+
+    char add[255]; // Initialise un string pour add
+    int indexSrc = getIndex(tab,Src,length); // Permet de récupérer l'index à partir de la source
+    int indexDst = getIndex(tab,Dst,length); // Permet de récupérer l'index à partir de la destination
+
+    char output[255] = ""; // Initialise l'output
+    int path = tab[indexDst].before; // On remont à partir du path[0] de la destination vers la source
+    sprintf(output,"%d %d",path,Dst); // Convertie le path[0] et path[1] en str
+    
+    while (path != Src) { // Tant que on est pas arrivé au départ
+        sprintf(add,"%d ",tab[getIndex(tab,path,length)].before); // On convertie le path[0] du path[0] en str
+        strcat(add,output); // On l'ajoute avant l'output
+        strcpy(output,add); // Vue qu'on remonte le chemin à l'envers
+        path = tab[getIndex(tab,path,length)].before; // Et on récupère le path[0] du path[0]
+    }
+    
+    printf("\n    chemin : %s",output); // Puis on affiche le chemin
+
+    return;
+}
+
+
+/*! @brief Implémante l'algorithme de Djikstra pour trouver le plus cour chemin
+ *  @param g Un pointeur vers le graphe
+ *  @param start Noeud de départ pour commencer l'algorithme
+ * 
+ * Comportement : 
+ * Initialise un tableau de noeuds de Djikstra de la taille du nombre de noeud de graphe.
+ * Puis commence par le noeud du départ regard les noeuds sortant de ce dernier à l'aide d'une boucle
+ * dans ca liste d'adjacence note le poids pour atteindre les chemins si ce dernier est le poids le plus petit
+ * et le noeud qui précède le noeud sortant. Ensuite cherche quel noeud analysé parmi les noeuds restants qui ne sont pas peints
+ * a l'aide de searchCurrent. Puis print les résultats trouvées.
+ */
+void Djikstra(graph_t *g, int start) {
+    node_d_t *tab = malloc(g->memory_allocated * sizeof(node_d_t)); // Alloue un tableau de la taille du nombre de noeuds
+    int length = g->memory_allocated ; //
     // Initialise un tableau de noeuds de djisktra de même taille que le nombre
     // de sommets du graphe
 
     for (int i = 0; i < g->memory_allocated ; ++i) { // Initialise le tableau de noeuds de djikstra
         tab[i].data = g->tab[i].data; // Récupère le nom de chaque sommets du graphe
-        tab[i].seen = false; // Par défault les noeuds n'ont pas était vue
-        tab[i].path = NULL; // Par défault on ne connait pas de chemin pour y accéder
-        tab[i].weight = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
+        tab[i].painted = false; // Par défault les noeuds n'ont pas était vue
+        tab[i].nametag = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
+        tab[i].begin = g->tab[i].begin; // Associe les noeuds voisins au nouveau tableau
     }
+    
+    int indexCurrent = getIndex(tab,start,length); // Récupère l'index dans le tableau du noeud de départ
+    tab[indexCurrent].nametag = 0;
 
-    int indexStart = getIndex(tab,start);
+    node_t *ptr = NULL; // Pointeur pour voyager dans les noeuds sortants
+    while (!isPainted(tab,length)) {
+        // Je peint le noeuds que je visite
+        tab[indexCurrent].painted = true; // Peint le noeud de départ
 
-    // Je peint le noeuds que je visite
-    // Je regarde ces noeuds sortants
-    // Je note les nouveaux chemins que j'ai découvert pour ces noeuds sortant si ce sont les plus courts trouvées
-    //
+        // Je regarde ces noeuds sortants
+        ptr = tab[indexCurrent].begin; // Initialise un pointeur sur la liste d'adjacence
+        int indexTarget = 0;
+        while (ptr) {  // Itère à travers les noeuds voisins
+            indexTarget = getIndex(tab,ptr->data,length); // Récupère l'index de la cible dans le tableau à chaque nouveau noeuds voisins
+            // Je note les nouveaux chemins que j'ai découvert pour ces noeuds sortant si ce sont les plus courts trouvées 
+            if (ptr->weight + tab[indexCurrent].nametag < tab[indexTarget].nametag || tab[indexTarget].nametag == -1 ) { 
+                // Si le chemin trouvée est plus court que l'ancien alors
+                tab[indexTarget].nametag = ptr->weight + tab[indexCurrent].nametag; // Le nouveau chemin pour le noeud est changée
+                tab[indexTarget].before = tab[indexCurrent].data; // Donne le noeud précédent
+                
+            }
+            
+            ptr = ptr->next;
+        }
 
-    return NULL;
+        // Je parcours mes noeuds à la recherche d'un noeud qui n'a pas était peint et avec l'étiquette la plus faible
+        indexCurrent = searchCurrent(tab,length);
+
+    }// Et je répète l'opération
+
+    for (int i = 0; i < length ; ++i) { // J'affiche mes résultats
+        printf("\nLe noeud %d : \n    étiquette : %d",tab[i].data,tab[i].nametag);
+        path_builder(tab,start,tab[i].data,length);
+    }
+    
+    return;
 }
 
 
