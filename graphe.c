@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "graphe.h"
 
 
@@ -10,18 +11,26 @@
  * Comportement :
  * Initialise dans la mémoire le graphe lui affecte vertices et is_oriented,
  * Initialise les listes d'adjacences de chaques sommets sous forme de tableau
+ * Et de chaques case mémoire en plus du tableau (cf commentaires)
  * Puis a l'aide d'une boucle donne comme valeurs par défault 1 2 3 ... aux noeuds
- * Et NULL à la liste de noeuds voisins
+ * allouée et NULL aux noeuds non allouées.
+ * Et NULL à la liste de noeuds voisins de chaque noeuds.
  */
-graph_t *create_graph(int vertices, Bool is_oriented) {
+graph_t *create_graph(int vertices, bool is_oriented) {
     graph_t *g = malloc(sizeof(graph_t)); // Initialise le graph
 
     g->is_oriented = is_oriented; // Setup le booléen
-    g->nb_vertices = vertices; // Setup le nombres de sommet
+    g->memory_allocated = vertices; // La mémoire allouer du tableau est égale aux nombres de noeuds
+    g->tab_memory = 10 + (vertices/10) * 10;
 
-    g->tab = malloc(vertices * sizeof(adjencyList_t)); // Initialise la liste de noeuds voisins pour chaque noeuds
+    g->tab = malloc( g->tab_memory * sizeof(adjencyList_t)); // Initialise la liste de noeuds voisins pour chaque case mémoire du tableau
+    // Donc un tableau sera de taille 10 par défault et on rajoutera 10  à ca taille pour chaque pour chaque dizaine de noeuds en plus
+    // Exemple :
+    // Si 10 noeuds -> mémoire du tableau = 20
+    // Si 11 noeuds -> mémoire du tableau = 20
+    // Si 55 noeuds -> mémoire du tableau = 60
 
-    for (int i = 0; i < g->nb_vertices; ++i) {
+    for (int i = 0; i < g->memory_allocated; ++i) { // Boucle pour intialiser seulement la mémoire allouer du tableau
         g->tab[i].data = i+1; // Par défault le noms de base des points sera 1 2 3 ...
         g->tab[i].begin = NULL; // Par défault ils n'ont pas d'arête entre eux
     }
@@ -37,7 +46,7 @@ graph_t *create_graph(int vertices, Bool is_oriented) {
  */
 void erase_graph(graph_t* g) {
 
-    for (int i = 0; i < g->nb_vertices; ++i) { // Parcours chaques sommets du graphes
+    for (int i = 0; i < g->memory_allocated; ++i) { // Parcours chaques sommets du graphes
         node_t* current = g->tab[i].begin; // Regarde la liste d'adjacences de chaque sommets
         while (current) { // Parcours la liste d'adjacence
             node_t* tmp = current->next; // Permet d'aller d'un élément à un autre tout en sauvegardant
@@ -58,7 +67,7 @@ void erase_graph(graph_t* g) {
  * Comportement : 
  * Retourne true si le graph est Vide false sinon
  */
-Bool is_empty(graph_t *g) {
+bool is_empty(graph_t *g) {
     return g==NULL;
 }
 
@@ -72,7 +81,7 @@ Bool is_empty(graph_t *g) {
  * Sinon retourne -1 pour signifier que l'on à pas rencontré la cible.
  */
 int contain(graph_t *g, int target) {
-    for (int i = 0; i < g->nb_vertices; ++i) { // Boucle permettant de parcourir les sommets
+    for (int i = 0; i < g->memory_allocated; ++i) { // Boucle permettant de parcourir les sommets
         if (g->tab[i].data == target) { // Si on rencontre la cible
             return i; // On retourne l'index de la cible
         }
@@ -87,20 +96,52 @@ int contain(graph_t *g, int target) {
  * 
  * Comportement :
  * Premiérement actualise le nombre de sommets du graphe.
- * Réallou la taille du tableau de listes d'adjacences avec le une liste d'adjacence en plus.
- * Puis crée le nouveau sommets en l'étiquettant et en lui signifiant qu'il n'est relié à rien.
+ * Ensuite vérifie si la mémoire allouée à atteint la mémoire maximale du tableau
+ * Si oui utilise increase_memory pour augmenter la taille du tableau de 10 unités
+ * Puis ajoute le nouveau sommets.
  */
 graph_t *add_vertex(graph_t *g, int vertex) {
-    g->nb_vertices += 1; // Agrandis le nombres de sommets de 1
+
+    if (contain(g,vertex) != -1) {
+        printf("Le graphe contient déjà le noeud");
+        return g;
+    } 
+
+    g->memory_allocated += 1; // Agrandis le nombres de sommets de 1
     
-    g->tab = realloc(g->tab, g->nb_vertices * sizeof(adjencyList_t));
-    //Réalloue la mémoire du tableau de listes d'adjacences
+    if (g->memory_allocated >= g->tab_memory) {
+        g->tab = increase_memory(g);
+        //Réalloue la mémoire du tableau de listes d'adjacences en ajoutant 10
+    }
     
-    g->tab[g->nb_vertices - 1].data = vertex; // Etiquette le nouveau sommet
-    g->tab[g->nb_vertices - 1].begin = NULL; // Vue qu'il est nouveau
+    g->tab[g->memory_allocated - 1].data = vertex; // Etiquette le nouveau sommet
+    g->tab[g->memory_allocated - 1].begin = NULL; // Vue qu'il est nouveau
     //Pas de lien pour l'instant donc NULL
     
     return g;
+}
+
+
+/*! @brief Permet d'augmenter la taille mémoire d'un tableau de 10 unités
+ *  @param g Un pointeur vers le graphe
+ *
+ * Comportement :
+ * Initialise un nouveau tableau avec comme taille +10 unités de valeurs que l'ancien.
+ * Copie à l'aide d'une boucle la partie allouée de la mémoire de l'ancien tableau dans le nouveau.
+ * Libère de la mémoire l'ancien tableau et retourne le nouveau
+ */
+adjencyList_t *increase_memory(graph_t* g) {
+    g->tab_memory += 10;
+    adjencyList_t *new_tab = malloc( g->tab_memory * sizeof(adjencyList_t) ); // Initialise le nouveau tableau
+
+    for (int i = 0; i < g->memory_allocated ; ++i) { // Copie l'ancien tableau dans le nouveau tableau
+        new_tab[i].data = g->tab[i].data; // Copie le nom du noeuds
+        new_tab[i].begin = g->tab[i].begin; // Copie la liste de ces voisins
+    }
+    
+    free(g->tab); // Libère de la mémoire l'ancien tableau
+
+    return new_tab; // Retourne le nouveau tableau pour l'affecter
 }
 
 
@@ -110,10 +151,12 @@ graph_t *add_vertex(graph_t *g, int vertex) {
  * 
  * Comportement :
  * Dans un premier temps vérifie que le noeuds est dans l'arbre.
- * Puis efface à tous les noeuds de la listes d'adjacences avec
- * une boucle. Ensuite inverse le dernière élément et l'élément cible
- * pour pouvoir enfin realloc le tableau avec un sommets de moins en taille.
- * Puis actualise le tableau et retourne le graphe.
+ * Ensuite avec une boucle parcours les listes d'adjacences de tout les noeuds
+ * du graphes et vérifie si le noeuds cible est présent si oui on l'efface de la liste d'adjacences.
+ * Puis on parcours la liste d'adjacences du noeuds cible pour la libérer entièrerement de la mémoire.
+ * Ensuite on inverse le noeud cible avec le dernière élément du tableau de sommets. Et on enlèvre 1
+ * à la mémoire allouée, si cette le tableau à 11 cases mémoires innocupées et qu'il à aux moins 20 case mémoires
+ * on lui enlève 10 cases mémoires à l'aide de reduce_memory.
  */
 graph_t *remove_vertex(graph_t *g, int target) {
 
@@ -123,7 +166,28 @@ graph_t *remove_vertex(graph_t *g, int target) {
         return g; // Retourne le graphe sans changement
     }
 
-    node_t *ptr = g->tab[indexTarget].begin;
+    node_t *before = NULL; // Initialise un pointeur pour mémorise le noeud avant ptr
+    node_t *ptr = NULL; // Initialise un pointeur pour parcourir la liste d'adjacence
+    for (int i = 0; i < g->memory_allocated; ++i) { // Boucle à travers tout les sommets du tableau
+        before = NULL; // Pas de noeud avant le premier noeud logique
+        ptr = g->tab[i].begin; // Récupère le premier noeud voisins du sommets
+        while (ptr) { // Tant qu'il y à des voisins
+            if (ptr->data == target) { // Si on trouve le noeud cible
+                if (before) { // Et qu'il n'est pas la tête de liste
+                    before->next = ptr->next; // On enlève le noeud de la liste
+                }else { // Et qu'il est la tête de liste
+                    g->tab[i].begin = ptr->next; // On affecte le noeud d'après en tant que tête
+                }
+
+                free(ptr); // Puis on libère le noeud
+                break; // Sort de la boucle vue que l'on à trouver la cible
+            }
+            before = ptr;
+            ptr = ptr->next;
+        }
+    }
+
+    ptr = g->tab[indexTarget].begin;
     while (ptr) { // Parcours la liste d'adjacence
         node_t* tmp = ptr->next; // Permet d'aller d'un élément à un autre tout en sauvegardant
         // Le premier élément dans un élément temporaire
@@ -131,14 +195,39 @@ graph_t *remove_vertex(graph_t *g, int target) {
         ptr = tmp; // Passe à l'élément suivant
     }
 
-    adjencyList_t tmp = g->tab[g->nb_vertices-1]; // Mémorise le dernière éléments
-    g->tab[g->nb_vertices-1] = g->tab[indexTarget]; // Affecte la cible en tant que dernière élément
+    adjencyList_t tmp = g->tab[g->memory_allocated-1]; // Mémorise le dernière éléments
+    g->tab[g->memory_allocated-1] = g->tab[indexTarget]; // Affecte la cible en tant que dernière élément
     g->tab[indexTarget] = tmp; // L'élément mémoriser prend la place de la cible
 
-    g->tab = realloc(g->tab, (g->nb_vertices - 1) * sizeof(adjencyList_t)); // Réalloc la taille du tableau
-    g->nb_vertices -= 1; // Actualise le nombre de sommets dans le tableau
+     g->memory_allocated -= 1; // Actualise le nombre de sommets dans le tableau
+
+    if (g->tab_memory - g->memory_allocated == 11  && g->tab_memory >= 20) { // Si il y à 11 cases mémoires et que le tableau à aux moins 20 cases mémoires
+        g->tab = reduce_memory(g); // On peux le réduire de 10 cases mémoires
+    }
 
     return g;
+}
+
+/*! @brief Permet d'augmenter la taille mémoire d'un tableau de 10 unités
+ *  @param g Un pointeur vers le graphe
+ *
+ * Comportement :
+ * Initialise un nouveau tableau avec comme taille -10 unités de valeurs que l'ancien.
+ * Copie à l'aide d'une boucle la partie allouée de la mémoire de l'ancien tableau dans le nouveau.
+ * Libère de la mémoire l'ancien tableau et retourne le nouveau
+ */
+adjencyList_t *reduce_memory(graph_t* g) {
+    g->tab_memory -= 10;
+    adjencyList_t *new_tab = malloc( g->tab_memory * sizeof(adjencyList_t) ); // Initialise le nouveau tableau
+
+    for (int i = 0; i < g->memory_allocated ; ++i) { // Copie l'ancien tableau dans le nouveau tableau
+        new_tab[i].data = g->tab[i].data; // Copie le nom du noeuds
+        new_tab[i].begin = g->tab[i].begin; // Copie la liste de ces voisins
+    }
+
+    free(g->tab); // Libère de la mémoire l'ancien tableau
+    
+    return new_tab; // Retourne le nouveau tableau pour l'affecter
 }
 
 /*! @brief Permet d'ajouter une arête entre deux noeuds
@@ -161,6 +250,16 @@ graph_t *add_edge(graph_t* g, int src, int dst, int weight) {
     if (indexSrc == -1 || indexDst == -1) { // Si l'un des deux n'est pas dans le graphe
         printf("Erreur : Sommet invalide\n"); // Renvoie une erreur
         return g; // Et retourne le graphe sans changement
+    }
+
+    node_t* ptr = g->tab[indexSrc].begin; // affecte un pointeur sur la tête de listes
+    // des noeuds voisins de la source
+    while (ptr) { // Parcours les voisins de la source
+        if (ptr->data == dst) { // Si on rencontre la destination
+            printf("Erreur les sommets sont déjà liées"); // Les noeuds sont déjà liées
+            return g; // Donc met fin à la fonction
+        }
+        ptr = ptr->next;
     }
 
     // Créer un nouveau noeud pour la liste d'adjacence du sommet source
@@ -289,8 +388,9 @@ void display_graphe(graph_t *g) {
         return;
     }
 
-    printf("\n\n  Le graphe : ");
-    for (int i = 0; i < g->nb_vertices; ++i) { // Parcours chaques sommets du graphes
+    printf("\n\n  Le graphe : \n Mémoire allouée : %d / %d",g->memory_allocated,g->tab_memory);
+
+    for (int i = 0; i < g->memory_allocated; ++i) { // Parcours chaques sommets du graphes
         printf("\n (%d) : ",g->tab[i].data);
 
         node_t* ptr = g->tab[i].begin; // Regarde la liste d'adjacences de chaque sommets
@@ -308,6 +408,40 @@ void display_graphe(graph_t *g) {
 
 }
 
-//algorithme de djisktra
+/*----------------------- Algorithme de Djikstra -----------------------*/
+
+int getIndex(node_d_t *tab, int target) {
+    for (int i = 0; i < length(tab); ++i) { // Itère à travers le tableau
+        if (tab[i].data == target) { // Si on trouve la cible
+            return i; // Retourne l'index
+        }
+    }
+
+    return -1; // Erreur si on ne trouve pas la cible
+}
+
+int *Djikstra(graph_t *g, int start) {
+    node_d_t *tab = malloc(g->memory_allocated * (node_d_t));
+    // Initialise un tableau de noeuds de djisktra de même taille que le nombre
+    // de sommets du graphe
+
+    for (int i = 0; i < g->memory_allocated ; ++i) { // Initialise le tableau de noeuds de djikstra
+        tab[i].data = g->tab[i].data; // Récupère le nom de chaque sommets du graphe
+        tab[i].seen = false; // Par défault les noeuds n'ont pas était vue
+        tab[i].path = NULL; // Par défault on ne connait pas de chemin pour y accéder
+        tab[i].weight = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
+    }
+
+    int indexStart = getIndex(tab,start);
+
+    // Je peint le noeuds que je visite
+    // Je regarde ces noeuds sortants
+    // Je note les nouveaux chemins que j'ai découvert pour ces noeuds sortant si ce sont les plus courts trouvées
+    //
+
+    return NULL;
+}
+
+
 //parcours en largeur
 //parcours en profondeur
