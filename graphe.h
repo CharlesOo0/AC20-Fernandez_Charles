@@ -31,9 +31,10 @@ typedef struct _graph {
 
 typedef struct _node_djikstra {
     int data;
-    bool seen;
-    int *path;
-    int weight;
+    bool painted;
+    int before;
+    int nametag;
+    struct _node *begin;
 }node_d_t;
 
 /* Prototypes */
