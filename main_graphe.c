@@ -46,14 +46,17 @@ int main() {
     //printf("\ndzqhdzhq %d",5/10);*/
 
     graph_t *g = create_graph(5,true);
-    g = add_edge(g,1,3,20);
+    g = add_edge(g,1,3,18);
     g = add_edge(g,1,5,3);
-    g = add_edge(g,3,2,4);
+    g = add_edge(g,2,3,4);
+    g = add_edge(g,2,1,8);
     g = add_edge(g,4,2,1);
     g = add_edge(g,5,2,10);
     g = add_edge(g,5,4,2);
 
-    display_graphe(g);
+    //display_graphe(g);
+
+    Djikstra(g,1);
 
 
     return EXIT_SUCCESS;
