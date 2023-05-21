@@ -512,7 +512,7 @@ void concatene_path(node_d_t *tab, int indexCurrent, int indexTarget) {
  */
 void Djikstra(graph_t *g, int start) {
     node_d_t *tab = malloc(g->memory_allocated * sizeof(node_d_t)); // Alloue un tableau de la taille du nombre de noeuds
-    int length = g->memory_allocated ; //
+    int length = g->memory_allocated ;
     // Initialise un tableau de noeuds de djisktra de même taille que le nombre
     // de sommets du graphe
 
@@ -589,7 +589,8 @@ void Djikstra(graph_t *g, int start) {
  */
 void parcour_largeur(graph_t *g, int start) {
     node_d_t *tab = malloc(g->memory_allocated * sizeof(node_d_t)); // Alloue un tableau de la taille du nombre de noeuds
-    int length = g->memory_allocated ; //
+    narbre_t *un_arbre = create_ntree(start); // Crée l'arbre couvrant le graphe avec comme racine le noeud de départ
+    int length = g->memory_allocated ; 
     // Initialise un tableau de noeuds de djisktra de même taille que le nombre
     // de sommets du graphe
 
@@ -622,6 +623,7 @@ void parcour_largeur(graph_t *g, int start) {
         while (ptr) { // Je regarde ces noeuds sortants
             // Je les rajoutes comme distancé de étiquette + 1 si ils n'ont pas était exploré
             if (!tab[getIndex(tab,ptr->data,length)].painted) {
+                add_child(un_arbre, tab[treatement_tab[indexCurrent]].data, tab[getIndex(tab,ptr->data,length)].data); // Ajoute progressivement les noeuds dans l'arbre couvrant
                 tab[getIndex(tab,ptr->data,length)].nametag = tab[treatement_tab[indexCurrent]].nametag + 1; // Etiquette + 1 
                 tab[getIndex(tab,ptr->data,length)].painted = true; // On peint le noeud maintenant qu'il est vue
                 concatene_path(tab, treatement_tab[indexCurrent], getIndex(tab, ptr->data, length) ); // Sauvegarde le nouveau chemin pour atteindre le noeud
@@ -647,9 +649,113 @@ void parcour_largeur(graph_t *g, int start) {
         }
     }
 
+    printf("\n\nL'arbre couvrant : \n");
+    display_ntree(un_arbre,0);
+
     return;
 }
 
 /*----------------------- Parcour en profondeur  -----------------------*/
 
+/*! @brief Permet de savoir si toutes les nodes sortantes d'un noeuds sont paintes
+ *  @param tab Le tableau de noeuds de Djikstra
+ *  @param indexTarget L'index de la cible que l'on souhaite controlé
+ *  @param length La taille du tableau de noeuds
+ * 
+ * Comportement : 
+ * Itère à travers tout les noeuds sortants du noeud cible si on rencontre un noeud
+ * non peints alors retourne false sinon retourne true.
+ */
+bool out_nodes_painted(node_d_t *tab, int indexTarget, int length) {
+    node_t *ptr = tab[indexTarget].begin; // Initialise un pointeur sur le premier noeud voisin
+    while (ptr) { // Itère à travers les noeuds voisins
+        if (!tab[getIndex(tab,ptr->data,length)].painted) { //Si on rencontre un noeud non peint
+            return false; // Retourne false car tout les noeuds ne sont pas peints
+        }
+        ptr = ptr->next;
+    }
+
+    return true; // Sinon true
+}
+
+
+/*! @brief Implémante le parcour en profondeur
+ *  @param g Un pointeur vers la graphe à analyser
+ *  @param start Le noeud de départ pour l'algorithme
+ * 
+ * Comportement :
+ * Initialise un tableau de noeud de Djikstra j'ai conservé cette structure car il était possible de garder
+ * la même approche de résolution étant donnée que les deux algorithmes sont assez similaires.
+ * Puis initialise le premier noeud à traité comme étant le départ, ensuite boucle tant que
+ * tout les noeuds du graphe ne sont pas peints, on peint le noeud traité après on regarde si tout les noeuds sortant du noeud traité
+ * sont peints. Si oui on regarde si ce noeud est la racine si c'est le cas on met fin a la boucle sinon on remonte
+ * le noeud précédent le noeud traité. Si tout les noeuds ne sont pas peints alors on cherche dans les noeuds sortants
+ * le premier noeud non peint et on actualise son chemin, on l'ajoute à l'arbre couvrant en tant que fils du noeud qu'on traite.
+ * Puis on l'affecte en tant que noeud à traité.
+ */
+void parcour_profondeur(graph_t *g, int start) {
+    node_d_t *tab = malloc(g->memory_allocated * sizeof(node_d_t)); // Alloue un tableau de la taille du nombre de noeuds
+    narbre_t *un_arbre = create_ntree(start); // Crée l'arbre couvrant le graphe avec comme racine le noeud de départ
+    int length = g->memory_allocated ; 
+    // Initialise un tableau de noeuds de djisktra de même taille que le nombre
+    // de sommets du graphe
+
+    for (int i = 0; i < length ; ++i) { // Initialise le tableau de noeuds de djikstra
+        tab[i].data = g->tab[i].data; // Récupère le nom de chaque sommets du graphe
+        tab[i].painted = false; // Par défault les noeuds n'ont pas était vue
+        tab[i].nametag = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
+        tab[i].begin = g->tab[i].begin; // Associe les noeuds voisins au nouveau tableau
+
+        tab[i].path = malloc(g->memory_allocated * sizeof(int)); // Alloue un tableau de la taille maximale que le chemin peux prendre
+        tab[i].path[0] = start; // Par défault tout les noeuds commences par le noeuds de départ
+        tab[i].path_length = 1; // La mémoire attribuer du tableau 1 par défault
+    }
+
+    int indexCurrent = getIndex(tab, start, length);
+    node_t *ptr = NULL;
+
+    while (!isPainted(tab,length)) {// Tant que tout les noeuds ne sont pas peints
+
+        tab[indexCurrent].painted = true; // Je peint le noeud actuelle
+
+        if (out_nodes_painted(tab, indexCurrent, length)) {// Si tout ces noeuds sortants sont peints
+            if (tab[indexCurrent].data == start) {// Si je suis la racine alors je sors de la boucle
+                break;
+            }else {// Sinon je retourne en arriere 
+                indexCurrent = getIndex(tab,tab[indexCurrent].path[tab[indexCurrent].path_length - 2],length);
+            }
+        }
+        else {// Sinon 
+            ptr = tab[indexCurrent].begin;
+            while (ptr) { // Je choisi parmis ces noeuds sortant un noeuds non peints
+                if (!tab[getIndex(tab,ptr->data,length)].painted) { // Si on trouve un noeud pas peints ce qui est obligatoire
+                    concatene_path(tab, indexCurrent, getIndex(tab,ptr->data,length)); // On actualise le chemin pour atteindre ce noeud
+                    add_child(un_arbre, tab[indexCurrent].data, ptr->data); // On actualise l'arbre couvrant on ajoute
+                    // ce noeud en tant que fils du current
+                    indexCurrent = getIndex(tab,ptr->data,length); // Et le current deviens le fils
+                    break; // Et on sors de la boucle car on à ce que l'on voulais
+                }
+                
+                ptr = ptr->next;
+            }
+        }
+
+    }
+
+    printf("\n\nApplication Parcour en profondeur : ");
+    for (int i = 0; i < length ; ++i) { // J'affiche mes résultats
+        printf("\n\nLe noeud %d : ",tab[i].data); 
+        // Affiche le noeud et le pour l'atteindre
+        printf("\n    Chemin : "); // Affiche le chemin
+        for (int j = 0 ; j < tab[i].path_length ; ++j) {
+            printf("%d",tab[i].path[j]);
+            if ( j + 1 != tab[i].path_length ) printf("->");
+        }
+    }
+
+    printf("\n\nL'arbre couvrant : \n");
+    display_ntree(un_arbre,0);
+            
+    return;
+}
 
