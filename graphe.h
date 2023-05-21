@@ -27,13 +27,14 @@ typedef struct _graph {
     adjencyList_t *tab;
 }graph_t;
 
-/* Djikstra Node */
+/* noeud de Djikstra */
 
 typedef struct _node_djikstra {
     int data;
     bool painted;
-    int before;
     int nametag;
+    int  *path;
+    int path_length;
     struct _node *begin;
 }node_d_t;
 
