@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include "arbre_naire.c"
 #include "graphe.c"
+
+
 
 int main() {
 
@@ -56,8 +60,29 @@ int main() {
 
     //display_graphe(g);
 
-    Djikstra(g,1);
+    //Djikstra(g,1);
 
+    graph_t *h = create_graph(9,false);
+    h = add_edge(h,1,2,1);
+    h = add_edge(h,1,3,1);
+    h = add_edge(h,1,4,1);
+        h = add_edge(h,2,7,1);
+
+        h = add_edge(h,4,5,1);
+        h = add_edge(h,4,6,1);
+
+        h = add_edge(h,5,6,1);
+        h = add_edge(h,5,8,1);
+
+        h = add_edge(h,6,7,1);
+        h = add_edge(h,6,8,1);
+
+        h = add_edge(h,7,9,1);
+
+        h = add_edge(h,8,9,1);
+
+        Djikstra(h,1);
+        parcour_largeur(h,1);
 
     return EXIT_SUCCESS;
 }
