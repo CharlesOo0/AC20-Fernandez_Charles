@@ -479,44 +479,21 @@ int searchCurrent(node_d_t *tab, int length) {
 }
 
 
-/*! @brief Cette fonction permet de trouver le prochain noeud à exploré
- *  @param tab Pointeur vers le tableau
- *  @param Src Le noeud de départ
- *  @param Dst Le noeud d'arrivé
- *  @param length Taille du tableau
+/*! @brief Permet de crée le tableau de chemin de chaque noeuds
+ *  @param tab Le tableau représentant chaque noeuds
+ *  @param indexCurrent L'index dans le tableau du noeud actuellement traité
+ *  @param indexTarget L'index du noeud sortant en train d'être traité
  * 
- * Comportement :
- * Vérifie dans un premier temps si le chemin que l'on cherche n'est pas celui du départ.
- * Si c'est le cas retourne simple le départ sinon
- * On récupère les index du départ et de l'arrivé dans le tableau
- * Puis on les concatènes dans un string de sortie.
- * Ensuite on boucle tant que l'on ne rencontre pas le noeud de départ le noeud précédent notre noeud.
- * On concatene à gauche du string de sortie. Puis on print simplement le chemin.
+ * Comportement : 
+ * Copie le chemin du noeud traité dans le noeud sortant. Puis rajoute au noeud
+ * sortant en fin de chemin lui même tout dans augmentant la taille occupé dans la mémoire de 1.
  */
-void path_builder(node_d_t *tab, int Src, int Dst, int length) {
-
-    if (Src == Dst) { // Si le chemin que l'on cherche est celui du départ
-        printf("\n    chemin : %d",Src); // Retourne le départ
-        return; // Et met fin au programme
+void concatene_path(node_d_t *tab, int indexCurrent, int indexTarget) {
+    for (int i = 0 ; i < tab[indexCurrent].path_length ;  ++i) {
+        tab[indexTarget].path[i] = tab[indexCurrent].path[i];
     }
-
-    char add[255]; // Initialise un string pour add
-    int indexSrc = getIndex(tab,Src,length); // Permet de récupérer l'index à partir de la source
-    int indexDst = getIndex(tab,Dst,length); // Permet de récupérer l'index à partir de la destination
-
-    char output[255] = ""; // Initialise l'output
-    int path = tab[indexDst].before; // On remont à partir du path[0] de la destination vers la source
-    sprintf(output,"%d %d",path,Dst); // Convertie le path[0] et path[1] en str
-    
-    while (path != Src) { // Tant que on est pas arrivé au départ
-        sprintf(add,"%d ",tab[getIndex(tab,path,length)].before); // On convertie le path[0] du path[0] en str
-        strcat(add,output); // On l'ajoute avant l'output
-        strcpy(output,add); // Vue qu'on remonte le chemin à l'envers
-        path = tab[getIndex(tab,path,length)].before; // Et on récupère le path[0] du path[0]
-    }
-    
-    printf("\n    chemin : %s",output); // Puis on affiche le chemin
-
+    tab[indexTarget].path[tab[indexCurrent].path_length] = tab[indexTarget].data;
+    tab[indexTarget].path_length = tab[indexCurrent].path_length + 1 ;
     return;
 }
 
@@ -543,6 +520,10 @@ void Djikstra(graph_t *g, int start) {
         tab[i].painted = false; // Par défault les noeuds n'ont pas était vue
         tab[i].nametag = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
         tab[i].begin = g->tab[i].begin; // Associe les noeuds voisins au nouveau tableau
+
+        tab[i].path = malloc(g->memory_allocated * sizeof(int)); // Alloue un tableau de la taille maximale que le chemin peux prendre
+        tab[i].path[0] = start; // Par défault tout les noeuds commences par le noeuds de départ
+        tab[i].path_length = 1; // La mémoire attribuer du tableau 1 par défault
     }
     
     int indexCurrent = getIndex(tab,start,length); // Récupère l'index dans le tableau du noeud de départ
@@ -563,6 +544,7 @@ void Djikstra(graph_t *g, int start) {
                 // Si le chemin trouvée est plus court que l'ancien alors
                 tab[indexTarget].nametag = ptr->weight + tab[indexCurrent].nametag; // Le nouveau chemin pour le noeud est changée
                 tab[indexTarget].before = tab[indexCurrent].data; // Donne le noeud précédent
+                concatene_path(tab, indexCurrent, indexTarget);
                 
             }
             
@@ -575,8 +557,12 @@ void Djikstra(graph_t *g, int start) {
     }// Et je répète l'opération
 
     for (int i = 0; i < length ; ++i) { // J'affiche mes résultats
-        printf("\nLe noeud %d : \n    étiquette : %d",tab[i].data,tab[i].nametag);
-        path_builder(tab,start,tab[i].data,length);
+        printf("\n\nLe noeud %d : \n    étiquette : %d",tab[i].data,tab[i].nametag);
+        printf("\n    Chemin : ");
+        for (int j = 0 ; j < tab[i].path_length ; ++j) {
+            printf("%d",tab[i].path[j]);
+            if ( j + 1 != tab[i].path_length ) printf("->");
+        }
     }
     
     return;
