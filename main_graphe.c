@@ -81,8 +81,9 @@ int main() {
 
         h = add_edge(h,8,9,1);
 
-        Djikstra(h,1);
-        parcour_largeur(h,1);
+        //Djikstra(h,1);
+        //parcour_largeur(h,1);
+        parcour_profondeur(h,1);
 
     return EXIT_SUCCESS;
 }
