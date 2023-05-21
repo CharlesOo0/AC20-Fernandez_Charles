@@ -255,6 +255,7 @@ graph_t *add_edge(graph_t* g, int src, int dst, int weight) {
 
     node_t* ptr = g->tab[indexSrc].begin; // affecte un pointeur sur la tête de listes
     // des noeuds voisins de la source
+
     while (ptr) { // Parcours les voisins de la source
         if (ptr->data == dst) { // Si on rencontre la destination
             printf("Erreur les sommets sont déjà liées"); // Les noeuds sont déjà liées
@@ -515,7 +516,7 @@ void Djikstra(graph_t *g, int start) {
     // Initialise un tableau de noeuds de djisktra de même taille que le nombre
     // de sommets du graphe
 
-    for (int i = 0; i < g->memory_allocated ; ++i) { // Initialise le tableau de noeuds de djikstra
+    for (int i = 0; i < length ; ++i) { // Initialise le tableau de noeuds de djikstra
         tab[i].data = g->tab[i].data; // Récupère le nom de chaque sommets du graphe
         tab[i].painted = false; // Par défault les noeuds n'ont pas était vue
         tab[i].nametag = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
@@ -527,7 +528,7 @@ void Djikstra(graph_t *g, int start) {
     }
     
     int indexCurrent = getIndex(tab,start,length); // Récupère l'index dans le tableau du noeud de départ
-    tab[indexCurrent].nametag = 0;
+    tab[indexCurrent].nametag = 0; // Et lui affiche comme étiquette 0 car c'est le départ
 
     node_t *ptr = NULL; // Pointeur pour voyager dans les noeuds sortants
     while (!isPainted(tab,length)) {
@@ -543,8 +544,7 @@ void Djikstra(graph_t *g, int start) {
             if (ptr->weight + tab[indexCurrent].nametag < tab[indexTarget].nametag || tab[indexTarget].nametag == -1 ) { 
                 // Si le chemin trouvée est plus court que l'ancien alors
                 tab[indexTarget].nametag = ptr->weight + tab[indexCurrent].nametag; // Le nouveau chemin pour le noeud est changée
-                tab[indexTarget].before = tab[indexCurrent].data; // Donne le noeud précédent
-                concatene_path(tab, indexCurrent, indexTarget);
+                concatene_path(tab, indexCurrent, indexTarget); // Sauvegarde le nouveau chemin pour atteindre le noeud
                 
             }
             
@@ -556,6 +556,8 @@ void Djikstra(graph_t *g, int start) {
 
     }// Et je répète l'opération
 
+
+    printf("\n\nApplication algorithme de Djikstra : ");
     for (int i = 0; i < length ; ++i) { // J'affiche mes résultats
         printf("\n\nLe noeud %d : \n    étiquette : %d",tab[i].data,tab[i].nametag);
         printf("\n    Chemin : ");
@@ -568,6 +570,86 @@ void Djikstra(graph_t *g, int start) {
     return;
 }
 
+/*----------------------- Parcour en largeur  -----------------------*/
 
-//parcours en largeur
-//parcours en profondeur
+/*! @brief Réalise un parcour en largeur sur le graphe
+ *  @param g Le graphe à analyser
+ *  @param start le noeud de départ dans le graphe
+ * 
+ * Comportement : 
+ * Initialise un tableau de noeud de Djikstra j'ai conservé cette structure car il était possible de garder
+ * la même approche de résolution étant donnée que les deux algorithmes sont assez similaires.
+ * Ensuite commence initialise le tableau de traitement qui est une queue représentant l'ordre dans lequelle on
+ * va traité les noeuds. Puis tant qu'on à pas exploré tout le graphe on réalise l'algorithme.
+ * i. e.  On regarde les noeuds sortants du noeuds que l'on traite si ces derniers n'ont pas était exploré.
+ * On leur donne comme nouvelle étiquette celle du noeud actuellement traité + 1 et on rajoute au chemin du noeud
+ * actuellement traité la valeur du nouveau noeud pour l'affecté au nouveau noeud. Ensuite on peint le noeud que l'on explore.
+ * Et on ajoute le noeud explore à la queue de noeud à traité. Puis on passe au noeud à traité suivant.
+ * Et à la toute fin on affiche les informations récupérés.
+ */
+void parcour_largeur(graph_t *g, int start) {
+    node_d_t *tab = malloc(g->memory_allocated * sizeof(node_d_t)); // Alloue un tableau de la taille du nombre de noeuds
+    int length = g->memory_allocated ; //
+    // Initialise un tableau de noeuds de djisktra de même taille que le nombre
+    // de sommets du graphe
+
+    for (int i = 0; i < length ; ++i) { // Initialise le tableau de noeuds de djikstra
+        tab[i].data = g->tab[i].data; // Récupère le nom de chaque sommets du graphe
+        tab[i].painted = false; // Par défault les noeuds n'ont pas était vue
+        tab[i].nametag = -1; // Par défault le poid pour y accéder est infini ici représenter par -1
+        tab[i].begin = g->tab[i].begin; // Associe les noeuds voisins au nouveau tableau
+
+        tab[i].path = malloc(g->memory_allocated * sizeof(int)); // Alloue un tableau de la taille maximale que le chemin peux prendre
+        tab[i].path[0] = start; // Par défault tout les noeuds commences par le noeuds de départ
+        tab[i].path_length = 1; // La mémoire attribuer du tableau 1 par défault
+    }
+
+
+    node_t *ptr = NULL; // Pointeur pour voyager dans les noeuds sortants
+
+    int *treatement_tab = malloc(length * sizeof(int)); // Initialise la liste des noeuds à traités
+    tab[getIndex(tab,start,length)].nametag = 0; // Récupère l'index du premier noeud et lui affiche comme étiquette 0
+    treatement_tab[0] = getIndex(tab,start,length); // Affecte le premier noeud comme départ à traité
+    tab[treatement_tab[0]].painted = true; // Et je peint le noeud de départ
+
+    int indexCurrent = 0; // Comment le traitement du tableau a partir du départ
+    int tab_length = 1; // Taille de la liste à traité initialement 1
+
+    while (!isPainted(tab,length)) {// Tant que tout les noeuds ne sont pas peints
+        // J'ai une liste de noeuds auquels je vais regardé les noeuds sortant au départ le start
+        ptr = tab[treatement_tab[indexCurrent]].begin;
+    
+        while (ptr) { // Je regarde ces noeuds sortants
+            // Je les rajoutes comme distancé de étiquette + 1 si ils n'ont pas était exploré
+            if (!tab[getIndex(tab,ptr->data,length)].painted) {
+                tab[getIndex(tab,ptr->data,length)].nametag = tab[treatement_tab[indexCurrent]].nametag + 1; // Etiquette + 1 
+                tab[getIndex(tab,ptr->data,length)].painted = true; // On peint le noeud maintenant qu'il est vue
+                concatene_path(tab, treatement_tab[indexCurrent], getIndex(tab, ptr->data, length) ); // Sauvegarde le nouveau chemin pour atteindre le noeud
+                
+                treatement_tab[tab_length] = getIndex(tab,ptr->data,length); // Ajoute le noeud dans la liste à traité
+                tab_length += 1; // Agrandi la liste à traité de 1
+            }
+            ptr = ptr->next;
+        }
+
+        indexCurrent += 1; // Passe à l'élément suivant à traité
+
+    }// Et je répète
+
+    printf("\n\nApplication Parcour en largeur : ");
+    for (int i = 0; i < length ; ++i) { // J'affiche mes résultats
+        printf("\n\nLe noeud %d : \n    étiquette : %d",tab[i].data,tab[i].nametag); 
+        // Affiche le noeud et le pour l'atteindre
+        printf("\n    Chemin : "); // Affiche le chemin
+        for (int j = 0 ; j < tab[i].path_length ; ++j) {
+            printf("%d",tab[i].path[j]);
+            if ( j + 1 != tab[i].path_length ) printf("->");
+        }
+    }
+
+    return;
+}
+
+/*----------------------- Parcour en profondeur  -----------------------*/
+
+
