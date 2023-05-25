@@ -773,4 +773,3 @@ void parcour_profondeur(graph_t *g, int start) {
             
     return;
 }
-
