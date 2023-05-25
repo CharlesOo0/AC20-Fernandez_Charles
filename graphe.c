@@ -566,6 +566,11 @@ void Djikstra(graph_t *g, int start) {
             if ( j + 1 != tab[i].path_length ) printf("->");
         }
     }
+
+    for (int i = 0; i < length ; ++i) { // Efface le tableau de la mémoire
+        free(tab[i].path); // Efface le path
+    }
+    free(tab); // Efface le reste des variables pour chaques noeuds
     
     return;
 }
@@ -651,6 +656,11 @@ void parcour_largeur(graph_t *g, int start) {
 
     printf("\n\nL'arbre couvrant : \n");
     display_ntree(un_arbre,0);
+
+    for (int i = 0; i < length ; ++i) { // Efface le tableau de la mémoire
+        free(tab[i].path); // Efface le path
+    }
+    free(tab); // Efface le reste des variables pour chaques noeuds
 
     return;
 }
@@ -755,6 +765,11 @@ void parcour_profondeur(graph_t *g, int start) {
 
     printf("\n\nL'arbre couvrant : \n");
     display_ntree(un_arbre,0);
+
+    for (int i = 0; i < length ; ++i) { // Efface le tableau de la mémoire
+        free(tab[i].path); // Efface le path
+    }
+    free(tab); // Efface le reste des variables pour chaques noeuds
             
     return;
 }
