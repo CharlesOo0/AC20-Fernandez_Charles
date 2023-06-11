@@ -70,7 +70,7 @@ void concatene_path(node_d_t *tab, int indexCurrent, int indexTarget);
 bool out_nodes_painted(node_d_t *tab, int indexTarget, int length);
 
 void Djikstra(graph_t *g, int start);
-void parcour_largeur(graph_t *g, int start)
+void parcour_largeur(graph_t *g, int start);
 void parcour_profondeur(graph_t *g, int start);
 
 
